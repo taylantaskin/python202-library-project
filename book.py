@@ -9,12 +9,12 @@ class Book:
     is_borrowed: bool = False
 
     def borrow_book(self):
-        if self.is_borrowed:
+        if self.is_borrowed == True:
             raise ValueError(f"'{self.title}' is already borrowed.")
         self.is_borrowed = True
 
     def return_book(self):
-        if not self.is_borrowed:
+        if self.is_borrowed == False:
             raise ValueError(f"'{self.title}' was not borrowed.")
         self.is_borrowed = False
 
