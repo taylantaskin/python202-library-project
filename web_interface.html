@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .stat-card h4 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .books-section {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .books-section h3 {
+            background: #34495e;
+            color: white;
+            padding: 1rem 1.5rem;
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .books-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .books-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .books-table th,
+        .books-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .books-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+
+        .books-table tr:hover {
+            background: #f8f9fa;
+            transition: background-color 0.2s;
+        }
+
+        .book-type {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .book-type.book {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .book-type.ebook {
+            background: #e3f2fd;
+            color: #2196f3;
+        }
+
+        .book-type.audiobook {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status.available {
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .status.borrowed {
+            background: #ffebee;
+            color: #e53e3e;
+        }
+
+        .message {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+        }
+
+        .empty-state h4 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .books-table {
+                font-size: 0.9rem;
+            }
+
+            .books-table th,
+            .books-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Library Management System</h1>
+            <p>Manage your books with ease using our modern web interface</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Add Book Form -->
+            <div class="controls">
+                <h3>📖 Add New Book</h3>
+                <div class="form-group">
+                    <input type="text" id="isbn-input" placeholder="Enter ISBN (e.g., 9780743273565)" maxlength="20">
+                    <button id="add-book-btn">
+                        <span class="btn-text">Add Book</span>
+                        <span class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Message Area -->
+            <div id="message" class="message"></div>
+
+            <!-- Statistics -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h4 id="total-books">0</h4>
+                    <p>Total Books</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="available-books">0</h4>
+                    <p>Available</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="borrowed-books">0</h4>
+                    <p>Borrowed</p>
+                </div>
+            </div>
+
+            <!-- Books List -->
+            <div class="books-section">
+                <h3>📚 Book Collection</h3>
+                <div class="books-container">
+                    <table class="books-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>ISBN</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="books-list">
+                            <!-- Books will be loaded here -->
+                        </tbody>
+                    </table>
+                    <div id="empty-state" class="empty-state" style="display: none;">
+                        <h4>📚 No Books Found</h4>
+                        <p>Start building your library by adding your first book above!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        // DOM Elements
+        const isbnInput = document.getElementById('isbn-input');
+        const addBookBtn = document.getElementById('add-book-btn');
+        const booksListElement = document.getElementById('books-list');
+        const messageElement = document.getElementById('message');
+        const totalBooksElement = document.getElementById('total-books');
+        const availableBooksElement = document.getElementById('available-books');
+        const borrowedBooksElement = document.getElementById('borrowed-books');
+        const emptyStateElement = document.getElementById('empty-state');
+
+        // State
+        let books = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBooks();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            addBookBtn.addEventListener('click', addBook);
+            isbnInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addBook();
+                }
+            });
+        }
+
+        async function loadBooks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/books`);
+                if (!response.ok) {
+                    throw new Error('Failed to load books');
+                }
+                books = await response.json();
+                renderBooks();
+                updateStats();
+            } catch (error) {
+                showMessage('Failed to load books. Make sure the API server is running.', 'error');
+                console.error('Error loading books:', error);
+            }
+        }
+
+        async function addBook() {
+            const isbn = isbnInput.value.trim();
+            if (!isbn) {
+                showMessage('Please enter an ISBN', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/books`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ isbn })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`Book "${data.title}" added successfully!`, 'success');
+                    isbnInput.value = '';
+                    await loadBooks();
+                } else {
+                    throw new Error(data.detail || 'Failed to add book');
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+                console.error('Error adding book:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function deleteBook(isbn, title) {
+            if (!confirm(`Are you sure you want to delete "${title}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/books/${isbn}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`Book "${title}" deleted successfully!`, 'success');
+                    await loadBooks();
+                } else {
+                    throw new Error(data.detail || 'Failed to delete book');
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+                console.error('Error deleting book:', error);
+            }
+        }
+
+        function renderBooks() {
+            if (books.length === 0) {
+                booksListElement.innerHTML = '';
+                emptyStateElement.style.display = 'block';
+                return;
+            }
+
+            emptyStateElement.style.display = 'none';
+
+            booksListElement.innerHTML = books.map(book => `
+                <tr>
+                    <td><strong>${escapeHtml(book.title)}</strong></td>
+                    <td>${escapeHtml(book.author)}</td>
+                    <td><code>${book.isbn}</code></td>
+                    <td><span class="book-type ${book.book_type.toLowerCase()}">${book.book_type}</span></td>
+                    <td><span class="status ${book.is_borrowed ? 'borrowed' : 'available'}">${book.is_borrowed ? 'Borrowed' : 'Available'}</span></td>
+                    <td>
+                        <button class="btn-danger" onclick="deleteBook('${book.isbn}', '${escapeHtml(book.title).replace(/'/g, '\\\'')}')"
+                                ${book.is_borrowed ? 'disabled title="Cannot delete borrowed book"' : ''}>
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            const total = books.length;
+            const available = books.filter(book => !book.is_borrowed).length;
+            const borrowed = books.filter(book => book.is_borrowed).length;
+
+            totalBooksElement.textContent = total;
+            availableBooksElement.textContent = available;
+            borrowedBooksElement.textContent = borrowed;
+        }
+
+        function showMessage(text, type) {
+            messageElement.textContent = text;
+            messageElement.className = `message ${type}`;
+            messageElement.style.display = 'block';
+
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 5000);
+        }
+
+        function setLoading(loading) {
+            const btnText = document.querySelector('.btn-text');
+            const loadingSpinner = document.querySelector('.loading');
+
+            if (loading) {
+                btnText.style.display = 'none';
+                loadingSpinner.style.display = 'inline-block';
+                addBookBtn.disabled = true;
+            } else {
+                btnText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+                addBookBtn.disabled = false;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadBooks, 30000);
+    </script>
+</body>
+</html>
