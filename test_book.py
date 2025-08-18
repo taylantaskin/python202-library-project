@@ -10,7 +10,7 @@ from book import Book
 class TestLibrary:
     @pytest.fixture
     def temp_library(self):
-        """Test için geçici kütüphane oluşturur"""
+        """Creates a temporary library for testing"""
         test_file = "test_temp_library.json"
         lib = Library(data_file=test_file)
         yield lib
@@ -19,12 +19,12 @@ class TestLibrary:
             Path(test_file).unlink()
 
     def test_library_init(self, temp_library):
-        """Kütüphane başlatma testi"""
+        """Test library initialization"""
         assert isinstance(temp_library.books, list)
         assert temp_library.data_file == "test_temp_library.json"
 
     def test_add_and_find_book(self, temp_library):
-        """Kitap ekleme ve bulma testi"""
+        """Test adding and finding a book"""
         book = Book("Test Book", "Test Author", "1234567890")
         temp_library.add_book(book)
 
@@ -35,7 +35,7 @@ class TestLibrary:
         assert found.author == "Test Author"
 
     def test_duplicate_book_error(self, temp_library):
-        """Duplicate ISBN testi"""
+        """Test duplicate ISBN error"""
         book1 = Book("Book 1", "Author 1", "1234567890")
         book2 = Book("Book 2", "Author 2", "1234567890")
 
@@ -45,7 +45,7 @@ class TestLibrary:
             temp_library.add_book(book2)
 
     def test_remove_book(self, temp_library):
-        """Kitap silme testi"""
+        """Test removing a book"""
         book = Book("Test Book", "Test Author", "1234567890")
         temp_library.add_book(book)
 
@@ -55,13 +55,13 @@ class TestLibrary:
         assert found is None
 
     def test_remove_nonexistent_book(self, temp_library):
-        """Olmayan kitap silme testi"""
+        """Test removing a non-existent book"""
         with pytest.raises(ValueError, match="No book found"):
             temp_library.remove_book("9999999999")
 
     @patch('httpx.Client')
     def test_add_book_from_isbn_success(self, mock_client, temp_library):
-        """API'den başarılı kitap ekleme testi"""
+        """Test adding a book from ISBN via API (success case)"""
         # Mock book response
         mock_book_response = Mock()
         mock_book_response.status_code = 200
@@ -95,7 +95,7 @@ class TestLibrary:
 
     @patch('httpx.Client')
     def test_add_book_from_isbn_not_found(self, mock_client, temp_library):
-        """API'de bulunamayan kitap testi"""
+        """Test book not found in API"""
         mock_response = Mock()
         mock_response.status_code = 404
 
@@ -106,7 +106,7 @@ class TestLibrary:
             temp_library.add_book_from_isbn("9999999999999")
 
     def test_list_books(self, temp_library):
-        """Kitap listeleme testi"""
+        """Test listing books"""
         book1 = Book("Book 1", "Author 1", "1111111111")
         book2 = Book("Book 2", "Author 2", "2222222222")
 
@@ -121,18 +121,18 @@ class TestLibrary:
         assert "Book 2" in titles
 
     def test_save_and_load_persistence(self, temp_library):
-        """Veri kalıcılığı testi"""
-        # Kitap ekle
+        """Test data persistence"""
+        # Add a book
         book = Book("Persistent Book", "Persistent Author", "1234567890")
         temp_library.add_book(book)
 
-        # Yeni Library instance oluştur (aynı dosyadan yükler)
+        # Create a new Library instance (loads from the same file)
         new_library = Library(data_file=temp_library.data_file)
 
-        # Verilerin yüklendiğini kontrol et
+        # Verify data was loaded
         assert len(new_library.books) == 1
         assert new_library.books[0].title == "Persistent Book"
         assert new_library.books[0].author == "Persistent Author"
         assert new_library.books[0].isbn == "1234567890"
 
-# Çalıştırmak için: pytest test_library_simple.py -v
+# Run with: pytest test_book.py -v
