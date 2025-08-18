@@ -43,55 +43,51 @@ class Library:
         tmp.replace(self._data_path)
 
     def fetch_book_from_api(self, isbn: str) -> Optional[dict]:
-        """
-        Fetch book information from Open Library API.
-        Returns book data as dict or None if not found.
-        """
         try:
-            # Open Library API endpoint
             url = f"https://openlibrary.org/isbn/{isbn}.json"
-
-            # Configure client to follow redirects
             with httpx.Client(follow_redirects=True) as client:
                 response = client.get(url, timeout=10.0)
-
                 if response.status_code == 404:
                     return None
-
-                response.raise_for_status()  # Raises exception for bad status codes
+                response.raise_for_status()
                 book_data = response.json()
-
-                # Extract title
                 title = book_data.get("title", "Unknown Title")
 
-                # Extract authors (Open Library can have complex author structure)
                 authors = []
-                if "authors" in book_data:
-                    for author_ref in book_data["authors"]:
-                        if isinstance(author_ref, dict) and "key" in author_ref:
-                            # Fetch author name from author key
-                            author_key = author_ref["key"]
-                            author_url = f"https://openlibrary.org{author_key}.json"
-                            try:
-                                author_response = client.get(author_url, timeout=5.0)
-                                if author_response.status_code == 200:
-                                    author_data = author_response.json()
-                                    author_name = author_data.get("name", "Unknown Author")
-                                    authors.append(author_name)
-                                else:
-                                    authors.append("Unknown Author")
-                            except Exception:
-                                authors.append("Unknown Author")
 
-                # If no authors found, use "Unknown Author"
+                # 1️⃣ Eğer 'authors' varsa normal şekilde çek
+                if "authors" in book_data:
+                    for a in book_data["authors"]:
+                        if "key" in a:
+                            author_resp = client.get(f"https://openlibrary.org{a['key']}.json", timeout=5)
+                            if author_resp.status_code == 200:
+                                authors.append(author_resp.json().get("name", "Unknown Author"))
+
+                # 2️⃣ Eğer 'authors' yok ama 'works' varsa works endpoint'inden çek
+                elif "works" in book_data and len(book_data["works"]) > 0:
+                    work_key = book_data["works"][0]["key"]
+                    work_resp = client.get(f"https://openlibrary.org{work_key}.json", timeout=5)
+                    if work_resp.status_code == 200:
+                        work_data = work_resp.json()
+                        for a in work_data.get("authors", []):
+                            author_key = a["author"]["key"]
+                            author_resp = client.get(f"https://openlibrary.org{author_key}.json", timeout=5)
+                            if author_resp.status_code == 200:
+                                authors.append(author_resp.json().get("name", "Unknown Author"))
+
                 if not authors:
                     authors = ["Unknown Author"]
 
                 return {
                     "title": title,
-                    "author": ", ".join(authors),  # Join multiple authors
+                    "author": ", ".join(authors),
                     "isbn": isbn
                 }
+
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch book for ISBN {isbn}: {e}")
+            return None
+
 
         except httpx.TimeoutException:
             print(f"[ERROR] Timeout while fetching book data for ISBN: {isbn}")
