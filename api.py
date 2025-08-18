@@ -1,5 +1,6 @@
 # api.py
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from library import Library
@@ -56,7 +57,6 @@ class AddBookRequest(BaseModel):
         return v
 
 
-
 class MessageResponse(BaseModel):
     """General message response"""
     message: str
@@ -74,6 +74,15 @@ app = FastAPI(
     title="Library Management API",
     description="A simple library management system API built with FastAPI",
     version="1.0.0"
+)
+
+# CORS middleware ekliyoruz
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Tüm origin'lere izin ver - production'da daha kısıtlayıcı olmalı
+    allow_credentials=True,
+    allow_methods=["*"],  # Tüm HTTP metodlarına izin ver
+    allow_headers=["*"],  # Tüm header'lara izin ver
 )
 
 # Initialize library
@@ -100,7 +109,6 @@ async def get_all_books():
 
 
 @app.post("/books", response_model=BookResponse)
-
 async def add_book(request: AddBookRequest):
     """
     Add a new book to the library using ISBN
@@ -236,3 +244,7 @@ if __name__ == "__main__":
         reload=True,
         log_level="info"
     )
+
+    # uvicorn api:app --reload --host 127.0.0.1 --port 8000
+    # Tüm ağ arayüzlerinden erişim için:
+    # uvicorn api:app --reload --host 0.0.0.0 --port 8000

@@ -2,9 +2,77 @@ from book import Book, EBook, AudioBook
 from library import Library
 from member import Member
 from member_manager import MemberManager
+import sys
+import time
+import webbrowser
+from pathlib import Path
+from multiprocessing import Process
+import uvicorn
+
+# -----------------------------
+# Top-level function for API
+# -----------------------------
+def run_server():
+    """Run the FastAPI API server"""
+    uvicorn.run("api:app", host="127.0.0.1", port=8000, log_level="warning")
 
 
-def print_books(lib: Library) -> None:
+# -----------------------------
+# Web interface starter
+# -----------------------------
+def start_web_interface():
+    print("\nStarting Library Management Web Interface...")
+    print("=" * 50)
+
+    try:
+        web_file = Path("web_interface.html")
+        if not web_file.exists():
+            print("Error: web_interface.html file not found!")
+            input("Press Enter to continue...")
+            return
+
+        print("Starting API server...")
+
+        server_process = Process(target=run_server)
+        server_process.start()
+
+        print("Waiting for server to start...")
+        time.sleep(3)
+
+        web_url = f"file://{web_file.absolute()}"
+        print(f"Opening web interface: {web_url}")
+        webbrowser.open(web_url)
+
+        print("\nWeb interface is now running!")
+        print("API Server: http://127.0.0.1:8000")
+        print("API Docs: http://127.0.0.1:8000/docs")
+        print("Keep this terminal window open to keep the API server running.")
+        print("Press Ctrl+C to stop the server and return to menu.")
+
+        try:
+            server_process.join()
+        except KeyboardInterrupt:
+            print("\nStopping server...")
+            server_process.terminate()
+            server_process.join()
+            print("Server stopped successfully.")
+
+    except ImportError as e:
+        if "uvicorn" in str(e):
+            print("Error: uvicorn not installed!")
+            print("Install with: pip install uvicorn[standard]")
+        else:
+            print(f"Import Error: {e}")
+        input("Press Enter to continue...")
+    except Exception as e:
+        print(f"Error starting web interface: {e}")
+        input("Press Enter to continue...")
+
+
+# -----------------------------
+# CLI interface functions
+# -----------------------------
+def print_books(lib: Library):
     books = lib.list_books()
     if not books:
         print("No books in the library.")
@@ -14,7 +82,7 @@ def print_books(lib: Library) -> None:
     input("Press Enter to continue...")
 
 
-def print_members(mgr: MemberManager) -> None:
+def print_members(mgr: MemberManager):
     members = mgr.list_members()
     if not members:
         print("No members in the system.")
@@ -24,7 +92,7 @@ def print_members(mgr: MemberManager) -> None:
     input("Press Enter to continue...")
 
 
-def add_book_flow(lib: Library) -> None:
+def add_book_flow(lib: Library):
     print("\nSelect Book Addition Method:")
     print("1) Add book automatically using ISBN (from Open Library API)")
     print("2) Add book manually (enter all details)")
@@ -36,7 +104,6 @@ def add_book_flow(lib: Library) -> None:
             print("ISBN cannot be empty.")
             input("Press Enter to continue...")
             return
-
         try:
             print("Fetching book information from Open Library...")
             success = lib.add_book_from_isbn(isbn)
@@ -45,10 +112,8 @@ def add_book_flow(lib: Library) -> None:
                 book = lib.find_book(isbn)
                 if book:
                     print("Added:", book)
-        except ValueError as e:
-            print("Error:", e)
         except Exception as e:
-            print("Unexpected error:", e)
+            print("Error:", e)
 
     elif method == "2":
         print("\nSelect Book Type:")
@@ -85,7 +150,7 @@ def add_book_flow(lib: Library) -> None:
     input("Press Enter to continue...")
 
 
-def remove_book_flow(lib: Library) -> None:
+def remove_book_flow(lib: Library):
     isbn = input("Enter ISBN to remove: ").strip()
     try:
         lib.remove_book(isbn)
@@ -95,7 +160,7 @@ def remove_book_flow(lib: Library) -> None:
     input("Press Enter to continue...")
 
 
-def search_book_flow(lib: Library) -> None:
+def search_book_flow(lib: Library):
     isbn = input("Enter ISBN to search: ").strip()
     b = lib.find_book(isbn)
     if b:
@@ -105,7 +170,7 @@ def search_book_flow(lib: Library) -> None:
     input("Press Enter to continue...")
 
 
-def add_member_flow(mgr: MemberManager) -> None:
+def add_member_flow(mgr: MemberManager):
     name = input("Member Name: ").strip()
     member_id = input("Member ID: ").strip()
     email = input("Email: ").strip()
@@ -118,7 +183,7 @@ def add_member_flow(mgr: MemberManager) -> None:
     input("Press Enter to continue...")
 
 
-def borrow_book_flow(lib: Library, mgr: MemberManager) -> None:
+def borrow_book_flow(lib: Library, mgr: MemberManager):
     member_id = input("Enter Member ID: ").strip()
     isbn = input("Enter ISBN of the book to borrow: ").strip()
     member = mgr.find_member(member_id)
@@ -144,7 +209,7 @@ def borrow_book_flow(lib: Library, mgr: MemberManager) -> None:
     input("Press Enter to continue...")
 
 
-def return_book_flow(lib: Library, mgr: MemberManager) -> None:
+def return_book_flow(lib: Library, mgr: MemberManager):
     member_id = input("Enter Member ID: ").strip()
     isbn = input("Enter ISBN of the book to return: ").strip()
     member = mgr.find_member(member_id)
@@ -170,14 +235,42 @@ def return_book_flow(lib: Library, mgr: MemberManager) -> None:
     input("Press Enter to continue...")
 
 
-def main():
+# -----------------------------
+# Interface selection
+# -----------------------------
+def select_interface():
+    while True:
+        print("\n" + "=" * 60)
+        print("LIBRARY MANAGEMENT SYSTEM")
+        print("=" * 60)
+        print("Choose your interface:")
+        print("1) Command Line Interface (CLI)")
+        print("2) Web Interface (Browser)")
+        print("3) Exit")
+
+        choice = input("Select interface (1-3): ").strip()
+
+        if choice == "1":
+            return "cli"
+        elif choice == "2":
+            return "web"
+        elif choice == "3":
+            print("Goodbye!")
+            return "exit"
+        else:
+            print("Invalid choice. Enter 1, 2, or 3.")
+            input("Press Enter to try again...")
+
+
+# -----------------------------
+# CLI runner
+# -----------------------------
+def run_cli_interface():
     lib = Library("library.json")
     member_manager = MemberManager("members.json")
 
     MENU = """
-===============================
-   Library Management System
-===============================
+Library Management CLI
 1) Add a Book
 2) Remove a Book
 3) List All Books
@@ -186,7 +279,8 @@ def main():
 6) List Members
 7) Borrow a Book
 8) Return a Book
-9) Exit
+9) Back to Interface Selection
+0) Exit
 Choice: """
 
     while True:
@@ -209,10 +303,28 @@ Choice: """
         elif choice == "8":
             return_book_flow(lib, member_manager)
         elif choice == "9":
-            print("Exiting...")
-            break
+            return
+        elif choice == "0":
+            print("Goodbye!")
+            sys.exit(0)
         else:
-            print("Invalid choice. Please enter a number between 1 and 9.")
+            print("Invalid choice. Enter a number between 0 and 9.")
+            input("Press Enter to try again...")
+
+
+# -----------------------------
+# Main entry point
+# -----------------------------
+def main():
+    while True:
+        interface_choice = select_interface()
+
+        if interface_choice == "cli":
+            run_cli_interface()
+        elif interface_choice == "web":
+            start_web_interface()
+        elif interface_choice == "exit":
+            break
 
 
 if __name__ == "__main__":
