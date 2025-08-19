@@ -1,5 +1,4 @@
 # 📚 Library Management System
-![Uploading Screenshot 2025-08-19 at 17.02.40.png…]()
 
 A simple yet powerful library management system built with **Python**, **FastAPI**, and a **web interface**.
 
