@@ -11,6 +11,7 @@ This is a 3-stage library management system:
 - **Stage 3**: FastAPI web service with HTML interface
 
 ---
+![Home Screen 1](images/homescreen1.png)
 
 ## ✨ Features
 
@@ -142,6 +143,8 @@ pytest test_api.py -v        # API tests
 ---
 
 ## 📚 Book Types
+
+![Home Screen 2](images/homescreen2.png)
 
 **Regular Book:**
 ```python
